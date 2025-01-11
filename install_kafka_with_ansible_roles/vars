@@ -1,0 +1,8 @@
+kafka_home: /opt
+kafka_workspace: "{{kafka_home}}/kafka"
+kafka_log_dir: "{{kafka_workspace}}/kafka-logs"
+zookeeper_data_dir: "{{kafka_workspace}}/zookeeper"
+zookeeper_log_dir: "{{kafka_workspace}}/zookeeper-logs"
+services_logs_dir: "{{kafka_workspace}}/services-logs"
+zookeeper_port: 2181
+kafka_heap_size: -Xmx512M -Xms512M

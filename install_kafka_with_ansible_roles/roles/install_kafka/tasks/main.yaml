@@ -1,0 +1,54 @@
+- name: Configure {{service_name}} Properties
+  template:
+    src: "{{config_file_name}}.properties.j2"
+    dest: "{{kafka_workspace}}/config/{{config_file_name}}.properties"
+
+- name: Update the Java Heap Size for {{service_name}}
+  replace:
+      path: "{{kafka_workspace}}/bin/{{service_name}}-server-start.sh"
+      regexp: 'export KAFKA_HEAP_OPTS=(".+")'
+      replace: 'export KAFKA_HEAP_OPTS="{{kafka_heap_size}}"'
+
+- name: Create {{service_name}} service
+  copy:
+    dest: "/etc/systemd/system/{{service_name}}.service"
+    content: |
+      [Unit]
+      Requires=network.target remote-fs.target
+      After=network.target remote-fs.target
+      [Service]
+      Type=simple
+      User=kafka
+      ExecStart=/bin/sh -c '{{kafka_workspace}}/bin/{{service_name}}-server-start.sh {{kafka_workspace}}/config/{{config_file_name}}.properties > {{services_logs_dir}}/{{service_name}}service.log 2>&1'
+      ExecStop={{kafka_workspace}}/bin/{{service_name}}-server-stop.sh
+      Restart=always  
+      [Install]
+      WantedBy=multi-user.target
+    mode: 0755
+
+- name: Start {{service_name}} service
+  tags: startzookeepers
+  systemd:
+      name: "{{service_name}}"
+      state: started
+      daemon_reload: true
+      enabled: yes     
+
+- name: verify {{service_name}} running
+  wait_for:
+    host: "{{ private_ip }}"
+    port: "{{server_port}}"
+    delay: 5
+    timeout: 20
+    state: started
+    msg: "Zookeeper not seem to be running on {{private_ip}}"
+
+- name: verify {{service_name}} running with ps
+  shell: ps aux | grep {{service_name}}
+  register: results
+- debug: msg={{results.stdout_lines}}
+
+- name: verify {{service_name}} running with netstat
+  shell: netstat -plnt
+  register: results
+- debug: msg={{results.stdout_lines}}

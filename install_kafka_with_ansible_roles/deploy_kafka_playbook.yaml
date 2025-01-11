@@ -1,0 +1,75 @@
+---
+- name: 
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: ensure VM is UP
+      wait_for:
+        port: 22
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        search_regex: OpenSSH
+        delay: 10
+        timeout: 100
+      vars:
+        ansible_connection: local
+
+- name: Setup envirenment and install kafka
+  hosts: all
+  become: True
+  vars_files:
+  - vars
+  roles:
+    - setup_envirenment
+
+
+
+- name: Install zookeeper
+  hosts: zookeeper
+  become: True
+  vars:
+    service_name: zookeeper
+    log_dir: "{{zookeeper_data_dir}}"
+    server_port: "{{zookeeper_port}}"
+  vars_files:
+  - vars
+  pre_tasks:
+    - name: Create ZooKeeper data directory
+      file:
+       path: "{{ zookeeper_data_dir }}"
+       state: directory
+       mode: 0755
+       recurse: yes
+       owner: kafka
+       group: kafka
+    
+    - name: Create services log directory
+      file:
+       path: "{{ services_logs_dir }}"
+       state: directory
+       mode: 0755
+       recurse: yes
+       owner: kafka
+       group: kafka
+
+    - name: Create ZooKeeper myid file with unique incremental values
+      copy:
+        content: "{{ kafka_broker_id }}"
+        dest: "{{zookeeper_data_dir}}/myid"
+
+  roles:
+    - install_kafka
+
+
+- name: Install Kafka Broker
+  hosts: kafka
+  become: True
+  vars:
+    service_name: kafka
+    config_file_name: server
+    server_port: 9092
+  vars_files:
+  - vars
+  roles:
+    - install_kafka
+
+

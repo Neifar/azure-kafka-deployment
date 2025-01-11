@@ -1,0 +1,48 @@
+############################# Server Basics #############################
+
+broker.id={{ kafka_broker_id }}
+
+
+############################# Socket Server Settings #############################
+
+listeners=CLIENT_listener://{{ private_ip }}:9092, BROKER_listener://{{ private_ip }}:9093
+advertised.listeners=CLIENT_listener://{{ private_ip }}:9092, BROKER_listener://{{ private_ip }}:9093
+listener.security.protocol.map=CLIENT_listener:PLAINTEXT,BROKER_listener:PLAINTEXT
+inter.broker.listener.name=BROKER_listener
+num.network.threads=8
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+
+############################# Log Basics #############################
+
+log.dirs={{kafka_log_dir}}
+num.partitions=2
+num.recovery.threads.per.data.dir=1
+
+
+############################# Internal Topic Settings  #############################
+
+offsets.topic.replication.factor=2
+transaction.state.log.replication.factor=2
+transaction.state.log.min.isr=1
+
+
+############################# Log Retention Policy #############################
+
+log.retention.hours=24
+log.retention.check.interval.ms=3600000
+
+
+############################# Zookeeper #############################
+
+zookeeper.connect={{ groups.zookeeper | map('extract', hostvars) | map(attribute='private_ip') | zip_longest([zookeeper_port], fillvalue=zookeeper_port) | map('join', ':') | join(',') }}
+
+
+zookeeper.connection.timeout.ms=18000
+
+############################# Group Coordinator Settings #############################
+
+group.initial.rebalance.delay.ms=1000

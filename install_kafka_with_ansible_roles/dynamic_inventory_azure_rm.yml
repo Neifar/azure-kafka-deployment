@@ -1,0 +1,8 @@
+
+plugin: azure_rm
+auth_source: cli
+include_vmss_resource_groups:
+    - '*'
+conditional_groups:
+    kafka: "'kafka' in name"
+    zookeeper: "'zookeeper' in name"
