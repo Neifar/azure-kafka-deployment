@@ -40,6 +40,7 @@ provider "azurerm" {
 Run the following command to initialize Terraform and download the necessary provider plugins:
 
     ```bash
+    cd kafka_setup_terraform
     terraform init
     ```
 
