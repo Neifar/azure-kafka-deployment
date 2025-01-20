@@ -43,17 +43,17 @@ resource "azurerm_subnet_network_security_group_association" "example" {
   network_security_group_id = azurerm_network_security_group.example.id
 }
 
-resource "azurerm_virtual_network_peering" "kafka-to-client" {
+resource "azurerm_virtual_network_peering" "kafka-to-control" {
   name                      = "peer1to2"
   resource_group_name       = azurerm_resource_group.example.name
   virtual_network_name      = azurerm_virtual_network.kafka.name
-  remote_virtual_network_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/test/providers/Microsoft.Network/virtualNetworks/vm-vnet"
+  remote_virtual_network_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/control_rg/providers/Microsoft.Network/virtualNetworks/control-vnet"
 }
 
-resource "azurerm_virtual_network_peering" "client-to-kafka" {
+resource "azurerm_virtual_network_peering" "control-to-kafka" {
   name                      = "peer2to1"
-  resource_group_name       = "test"
-  virtual_network_name      = "clientvm-vnet"
+  resource_group_name       = "control_rg"
+  virtual_network_name      = "control-vnet"
   remote_virtual_network_id = azurerm_virtual_network.kafka.id
 }
 
