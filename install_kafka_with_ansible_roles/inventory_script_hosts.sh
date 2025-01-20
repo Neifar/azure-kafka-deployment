@@ -17,7 +17,7 @@ public_dns="${public_dns_list[i]}"
 private_ip="${private_ip_list[i]}"
 if [[ "$public_dns" == *"kafka"* ]]; then
     ((counter++))
-    echo "$public_dns kafka_broker_id=$counter private_ip=$private_ip"
+    echo "$public_dns private_ip=$private_ip"
 fi
 done
 

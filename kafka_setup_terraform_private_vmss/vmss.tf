@@ -1,18 +1,17 @@
-
-
 ###################### VMSS #####################
 
 
 resource "azurerm_linux_virtual_machine_scale_set" "example" {
-  name                = "kafka-vmss"
+  name                = "kafkazookeeper-vmss"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   sku                 = "Standard_B1s"
   instances           = 2
   admin_username      = "azureuser"
   upgrade_mode        = "Manual"
-  computer_name_prefix = "ramzi"
+  computer_name_prefix = "kafkazookeeperprefix"
   overprovision       = false
+
   source_image_reference {
   publisher = "Canonical"
   offer     = "0001-com-ubuntu-server-jammy"
@@ -39,11 +38,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "example" {
       name                                   = "TestIPConfiguration"
       primary                                = true
       subnet_id                              = azurerm_subnet.kafka.id
-      public_ip_address {
-        name                    = "kafka-public-ip"
-        idle_timeout_in_minutes = 4
-        domain_name_label       = "kafkazookeeperdnsprefix"
-      }
     }
   }
 }
@@ -59,18 +53,14 @@ output "virtual_machine_ips" {
   value = data.azurerm_virtual_machine_scale_set.example.instances.*.private_ip_address
 }
 
-output "public_ips" {
-  value = data.azurerm_virtual_machine_scale_set.example.instances.*.public_ip_address
-}
 
 
 resource "null_resource" "launch_ansible_playbook"{
-  triggers = {
-    trigger = join(",", data.azurerm_virtual_machine_scale_set.example.instances.*.public_ip_address) 
-    trigger2 = join(",", data.azurerm_virtual_machine_scale_set.example.instances.*.private_ip_address) 
+  triggers = { 
+    trigger = join(",", data.azurerm_virtual_machine_scale_set.example.instances.*.private_ip_address) 
   }
   provisioner "local-exec" {
     working_dir = "../install_kafka_with_ansible_roles"
-    command = "./inventory_script_hosts.sh > myhosts; ansible-playbook deploy_kafka_playbook.yaml"
+    command = "ansible-playbook -i dynamic_inventory_azure_rm.yml deploy_kafka_playbook.yaml"
 }
 }

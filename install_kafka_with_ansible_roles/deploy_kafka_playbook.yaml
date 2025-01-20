@@ -51,6 +51,10 @@
        owner: kafka
        group: kafka
 
+    - name: Set incremental ID for Kafka group
+      set_fact:
+        kafka_broker_id: "{{ groups['kafka'].index(inventory_hostname) + 1 }}"
+
     - name: Create ZooKeeper myid file with unique incremental values
       copy:
         content: "{{ kafka_broker_id }}"
@@ -69,6 +73,10 @@
     server_port: 9092
   vars_files:
   - vars
+  pre_tasks:
+    - name: Set incremental ID for Kafka group
+      set_fact:
+        kafka_broker_id: "{{ groups['kafka'].index(inventory_hostname) + 1 }}"
   roles:
     - install_kafka
 

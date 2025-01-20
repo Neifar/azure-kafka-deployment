@@ -1,6 +1,7 @@
 # Kafka Deployment on Azure Using Ansible roles and Terraform
 
 This repository contains the necessary configuration to deploy Apache Kafka on Azure using Ansible and Terraform. You can follow these instructions to deploy Kafka on Azure either using an Ubuntu machine or Windows Subsystem for Linux (WSL).
+The project is managed using two methods: the first involves multiple virtual machines with public IPs, and the second uses private IPs.
 
 ## Prerequisites
 
@@ -12,6 +13,7 @@ Ensure the following tools are installed on your machine:
 - **Ansible**
 
 
+
 ## Azure Authentication and Configuration
 
 1. Login to your Azure account via the CLI:
@@ -19,23 +21,29 @@ Ensure the following tools are installed on your machine:
     ```bash
     az login
     ```
-
 This will prompt you to authenticate through a browser.
 
 
-2. Update the Terraform Provider
+2. Set subscription and tenant IDs
 
-In the `provider.tf` file, update the following with your Azure Subscription ID and Tenant ID:
+The subscription and tenant IDs are required to execute Terraform for Azure. There are two methods to configure them:
+* Set environment variables, as shown below:
+    ```bash
+    export ARM_SUBSCRIPTION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export ARM_TENANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    ```
 
-```hcl
-provider "azurerm" {
-  features = {}
-  subscription_id = "<YOUR_SUBSCRIPTION_ID>"
-  tenant_id       = "<YOUR_TENANT_ID>"
-}
-```
+* Set them directly in the provider.tf file, as shown below:
+    ```hcl
+    provider "azurerm" {
+    features = {}
+    subscription_id = "<YOUR_SUBSCRIPTION_ID>"
+    tenant_id       = "<YOUR_TENANT_ID>"
+    }
+    ```
 
 ## Terraform Setup
+
 1. Initialize Terraform
 Run the following command to initialize Terraform and download the necessary provider plugins:
 
