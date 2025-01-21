@@ -43,8 +43,15 @@ resource "azurerm_subnet_network_security_group_association" "example" {
   network_security_group_id = azurerm_network_security_group.example.id
 }
 
+resource "azurerm_public_ip" "control" {
+  name                = "control-ip"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  allocation_method   = "Dynamic"
+}
+
 resource "azurerm_network_interface" "example" {
-  name                = "nic-control"
+  name                = "control-nic"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -52,6 +59,7 @@ resource "azurerm_network_interface" "example" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.control.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.control.id
   }
 }
 

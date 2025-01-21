@@ -30,12 +30,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "example" {
   }
 
   network_interface {
-    name                      = "nic-kafka"
+    name                      = "kafka-nic"
     primary                   = true
     network_security_group_id = azurerm_network_security_group.example.id
 
     ip_configuration {
-      name                                   = "TestIPConfiguration"
+      name                                   = "KafkaIPConfiguration"
       primary                                = true
       subnet_id                              = azurerm_subnet.kafka.id
     }
