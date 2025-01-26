@@ -15,4 +15,5 @@ provider "azapi" {
 provider "azurerm" {
   features {}
   use_msi = true
+  subscription_id = var.ARM_SUBSCRIPTION_ID
 }

@@ -8,3 +8,7 @@ variable "resource_group_name" {
   description = "Prefix of the resource group name that's combined with a random ID so name is unique in your Azure subscription."
 }
 
+variable "ARM_SUBSCRIPTION_ID" {
+  description = "subscription id"
+  type        = string
+}

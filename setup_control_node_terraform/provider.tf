@@ -19,4 +19,5 @@ provider "azurerm" {
       recover_soft_deleted_secrets          = true
     }
   }
+  subscription_id = var.ARM_SUBSCRIPTION_ID
 }

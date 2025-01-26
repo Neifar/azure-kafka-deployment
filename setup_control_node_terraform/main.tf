@@ -1,5 +1,6 @@
 ############### RG #################
 data azurerm_subscription "current" { }
+data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "example" {
   location = var.resource_group_location
@@ -10,14 +11,15 @@ resource "azurerm_virtual_network" "control" {
   name                = "control-vnet"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  address_space = ["172.16.0.0/16"]
+  address_space = ["172.17.0.0/16"]
 }
 
 resource "azurerm_subnet" "control" {
   name                 = "control-subnet"
   resource_group_name  = azurerm_resource_group.example.name
   virtual_network_name = azurerm_virtual_network.control.name
-  address_prefixes     = ["172.16.2.0/24"]
+  address_prefixes     = ["172.17.1.0/24"]
+  service_endpoints = ["Microsoft.KeyVault"]
 }
 
 resource "azurerm_network_security_group" "example" {
@@ -47,7 +49,7 @@ resource "azurerm_public_ip" "control" {
   name                = "control-ip"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
 }
 
 resource "azurerm_network_interface" "example" {
@@ -94,14 +96,75 @@ resource "azurerm_linux_virtual_machine" "example" {
     sku       = "22_04-lts"
     version   = "latest"
   }
+
+  connection {
+    type = "ssh"
+    user = "azureadmin"
+    host = self.public_ip_address
+    private_key = file("~/.ssh/id_rsa")
+  }
+  provisioner "file" {
+    source      = "private_vmss_init.sh"
+    destination = "private_vmss_init.sh"
+  }
+  provisioner "remote-exec" {
+    when    = destroy
+    inline = [
+      "cd azure-kafka-deployment/kafka_setup_terraform_private_vmss",
+      "terraform destroy -var-file='sub_id.tfvars' -auto-approve",
+    ]
+  }
 }
 
-data "azurerm_role_definition" "contributor" {
-  name = "Contributor"
-}
 
 resource "azurerm_role_assignment" "control" {
   scope              = data.azurerm_subscription.current.id
   role_definition_name = "Contributor"
   principal_id       = azurerm_linux_virtual_machine.example.identity[0].principal_id
 }
+
+
+resource "azurerm_role_assignment" "user" {
+  scope              = azurerm_key_vault.example.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id       = data.azurerm_client_config.current.object_id
+}
+
+
+resource "null_resource" "launch_private_vmss"{
+  triggers = { 
+    trigger = join(",", azurerm_linux_virtual_machine.example.public_ip_addresses) 
+#    always_run = "${timestamp()}"
+  }
+  connection {
+    type = "ssh"
+    host = azurerm_linux_virtual_machine.example.public_ip_address
+    user = "azureadmin"
+    private_key = file("~/.ssh/id_rsa")
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x private_vmss_init.sh",
+      "./private_vmss_init.sh ${var.ARM_SUBSCRIPTION_ID}",
+    ]
+  }
+  depends_on = [azurerm_role_assignment.control, azurerm_role_assignment.keyvault, azurerm_key_vault_secret.example]
+}
+
+
+
+# resource "azurerm_virtual_machine_extension" "example" {
+#   name                 = "hostname"
+#   virtual_machine_id   = azurerm_linux_virtual_machine.example.id
+#   publisher            = "Microsoft.Azure.Extensions"
+#   type                 = "CustomScript"
+#   type_handler_version = "2.0"
+
+#   protected_settings = <<PROT
+#   {
+#       "script": "${base64encode(templatefile("private_vmss_init.sh", { sub_id=var.ARM_SUBSCRIPTION_ID }))}"
+#   }
+#   PROT
+
+#   depends_on = [azurerm_role_assignment.control, azurerm_role_assignment.keyvault, azurerm_key_vault_secret.example]
+# }
