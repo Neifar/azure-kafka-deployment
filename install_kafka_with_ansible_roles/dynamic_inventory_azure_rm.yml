@@ -14,4 +14,4 @@ hostvar_expressions:
     private_ip: private_ipv4_addresses[0]
 
 exclude_host_filters:
-    - computer_name == 'vm'
+    - computer_name == 'control'

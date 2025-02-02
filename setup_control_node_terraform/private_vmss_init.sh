@@ -23,13 +23,6 @@ token=`curl 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2
 mysecret=`curl 'https://control-keyvault.vault.azure.net/secrets/github-token?api-version=7.4' -H "Authorization: Bearer $token" | cut -d '"' -f 4`
 git clone https://Neifar:$mysecret@github.com/Neifar/azure-kafka-deployment.git
 
-
-cd azure-kafka-deployment/kafka_setup_terraform_private_vmss
-#export ARM_SUBSCRIPTION_ID=${sub_id}
-echo "ARM_SUBSCRIPTION_ID=$1" > sub_id.tfvars
-terraform init
-terraform apply -var-file='sub_id.tfvars' -auto-approve
-
-
+echo "Initialization done"
 
 #/var/lib/waagent/custom-script/download/0

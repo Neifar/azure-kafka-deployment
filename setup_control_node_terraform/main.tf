@@ -107,13 +107,17 @@ resource "azurerm_linux_virtual_machine" "example" {
     source      = "private_vmss_init.sh"
     destination = "private_vmss_init.sh"
   }
-  provisioner "remote-exec" {
-    when    = destroy
-    inline = [
-      "cd azure-kafka-deployment/kafka_setup_terraform_private_vmss",
-      "terraform destroy -var-file='sub_id.tfvars' -auto-approve",
-    ]
+  provisioner "file" {
+    source      = "private_vmss_deploy.sh"
+    destination = "private_vmss_deploy.sh"
   }
+  # provisioner "remote-exec" {
+  #   when    = destroy
+  #   inline = [
+  #     "cd azure-kafka-deployment/kafka_setup_terraform_private_vmss",
+  #     "terraform destroy -var-file='sub_id.tfvars' -auto-approve",
+  #   ]
+  # }
 }
 
 
@@ -131,10 +135,28 @@ resource "azurerm_role_assignment" "user" {
 }
 
 
-resource "null_resource" "launch_private_vmss"{
+resource "null_resource" "deploy_private_vmss"{
+  triggers = { 
+    always_run = "${timestamp()}"
+  }
+  connection {
+    type = "ssh"
+    host = azurerm_linux_virtual_machine.example.public_ip_address
+    user = "azureadmin"
+    private_key = file("~/.ssh/id_rsa")
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "./private_vmss_deploy.sh ${var.ARM_SUBSCRIPTION_ID} ${var.tf_cmd_type}",
+    ]
+  }
+  depends_on = [null_resource.Init_private_vmss]
+}
+
+
+resource "null_resource" "Init_private_vmss"{
   triggers = { 
     trigger = join(",", azurerm_linux_virtual_machine.example.public_ip_addresses) 
-#    always_run = "${timestamp()}"
   }
   connection {
     type = "ssh"
@@ -145,10 +167,11 @@ resource "null_resource" "launch_private_vmss"{
   provisioner "remote-exec" {
     inline = [
       "chmod +x private_vmss_init.sh",
-      "./private_vmss_init.sh ${var.ARM_SUBSCRIPTION_ID}",
+      "chmod +x private_vmss_deploy.sh",
+      "./private_vmss_init.sh",
     ]
   }
-  depends_on = [azurerm_role_assignment.control, azurerm_role_assignment.keyvault, azurerm_key_vault_secret.example]
+  depends_on = [azurerm_role_assignment.control, azurerm_role_assignment.keyvault, azurerm_key_vault_secret.example, azurerm_linux_virtual_machine.example]
 }
 
 

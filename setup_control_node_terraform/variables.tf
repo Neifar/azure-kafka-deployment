@@ -20,3 +20,9 @@ variable "ARM_SUBSCRIPTION_ID" {
   type        = string
 }
 
+variable "tf_cmd_type" {
+  description = "terraform command"
+  type        = string
+}
+
+
