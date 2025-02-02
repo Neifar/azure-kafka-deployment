@@ -1,5 +1,5 @@
 - name: Install Java
-  apt:
+  dnf:
     pkg: 
     - default-jre
     - net-tools
