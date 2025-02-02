@@ -7,18 +7,18 @@ resource "azurerm_linux_virtual_machine_scale_set" "example" {
   name                = "kafka-vmss"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
-  sku                 = "Standard_B1s"
+  sku                 = "Standard_D2pls_v6"
   instances           = 2
   admin_username      = "azureuser"
   upgrade_mode        = "Manual"
   computer_name_prefix = "ramzi"
   overprovision       = false
   source_image_reference {
-  publisher = "Canonical"
-  offer     = "0001-com-ubuntu-server-jammy"
-  sku       = "22_04-lts"
-  version   = "latest"
-}
+    publisher = "redhat"
+    offer     = "rhel-arm64"
+    sku       = "9_5-arm64"
+    version   = "latest"
+  }
 
   os_disk {
     caching              = "ReadWrite"

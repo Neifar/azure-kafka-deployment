@@ -69,7 +69,7 @@ resource "azurerm_linux_virtual_machine" "example" {
   name                = "control-node"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  size                = "Standard_B1ms"
+  size                = "Standard_D2pls_v6"
   network_interface_ids = [
     azurerm_network_interface.example.id,
   ]
@@ -91,9 +91,9 @@ resource "azurerm_linux_virtual_machine" "example" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    publisher = "redhat"
+    offer     = "rhel-arm64"
+    sku       = "9_5-arm64"
     version   = "latest"
   }
 
