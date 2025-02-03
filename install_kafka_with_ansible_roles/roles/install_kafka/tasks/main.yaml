@@ -41,7 +41,7 @@
     delay: 5
     timeout: 20
     state: started
-    msg: "Zookeeper not seem to be running on {{private_ip}}"
+    msg: "{{service_name}} not seem to be running on {{private_ip}}"
 
 - name: verify {{service_name}} running with ps
   shell: ps aux | grep {{service_name}}
