@@ -1,7 +1,7 @@
 - name: Install Java
   dnf:
     pkg: 
-    - default-jre
+    - java
     - net-tools
     state: present 
     update_cache: yes     

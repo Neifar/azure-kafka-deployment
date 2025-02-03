@@ -7,7 +7,8 @@
   replace:
       path: "{{kafka_workspace}}/bin/{{service_name}}-server-start.sh"
       regexp: 'export KAFKA_HEAP_OPTS=(".+")'
-      replace: 'export KAFKA_HEAP_OPTS="{{kafka_heap_size}}"'
+      replace: 'export KAFKA_HEAP_OPTS="{{kafka_heap_size}}";export KAFKA_OPTS="-Djava.net.preferIPv4Stack=True"'
+
 
 - name: Create {{service_name}} service
   copy:
@@ -41,7 +42,7 @@
     delay: 5
     timeout: 20
     state: started
-    msg: "Zookeeper not seem to be running on {{private_ip}}"
+    msg: "{{service_name}} not seem to be running on {{private_ip}}"
 
 - name: verify {{service_name}} running with ps
   shell: ps aux | grep {{service_name}}
