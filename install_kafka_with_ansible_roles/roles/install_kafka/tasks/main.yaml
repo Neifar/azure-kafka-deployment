@@ -7,7 +7,7 @@
   replace:
       path: "{{kafka_workspace}}/bin/{{service_name}}-server-start.sh"
       regexp: 'export KAFKA_HEAP_OPTS=(".+")'
-      replace: 'export KAFKA_HEAP_OPTS="{{kafka_heap_size}}";export KAFKA_OPTS="-Djava.net.preferIPv4Stack=True"'
+      replace: 'export KAFKA_HEAP_OPTS="{{kafka_heap_size}}"'
 
 
 - name: Create {{service_name}} service

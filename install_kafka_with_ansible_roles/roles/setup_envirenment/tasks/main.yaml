@@ -41,3 +41,12 @@
 - name: rename kafka folder
   shell: mv {{directory_name.files[0].path}} {{kafka_workspace}}
   when: not directory_check.stat.exists
+
+- name: Set firewall rules
+  shell: |
+    firewall-cmd --zone=public --add-port=2888/udp --add-port=2888/tcp --permanent;
+    firewall-cmd --zone=public --add-port=3888/udp --add-port=3888/tcp --permanent;
+    firewall-cmd --zone=public --add-port=2181/udp --add-port=2181/tcp --permanent;
+    firewall-cmd --zone=public --add-port=9092/udp --add-port=9092/tcp --permanent;
+    firewall-cmd --zone=public --add-port=9093/udp --add-port=9093/tcp --permanent;
+    firewall-cmd --reload
